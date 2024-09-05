@@ -1,10 +1,50 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}
-        Flower Delivery
-        {% endblock %}</title>
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{% static 'flowers/css/style.css' %}">
+    {% block title %}
+
+    {% endblock %}
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 </head>
+<body>
+<aside class="d-flex flex-column p-3 bg-light" style="width: 250px;">
+    <div class="text-center mb-3">
+        <img src="{% static 'flowers/img/logo.png' %}" alt="Логотип" class="img-fluid mb-2" style="max-width: 100%;">
+        <h4 class="text-primary">Магазин цветов</h4>
+    </div>
+    <ul class="nav flex-column">
+        <li class="nav-item mb-2">
+            <a class="nav-link text-dark" href="{% url 'index' %}">Главная</a>
+        </li>
+        <li class="nav-item mb-2">
+            <a class="nav-link text-dark" href="{% url 'catalog' %}">Каталог</a>
+        </li>
+        <li class="nav-item mb-2">
+            <a class="nav-link text-dark" href="{% url 'order_create' %}">Оформить заказ</a>
+        </li>
+        <li class="nav-item mb-2">
+            <a class="nav-link text-dark" href="{% url 'profile' %}">Личный кабинет</a>
+        </li>
+        <li class="nav-item mb-2">
+            <a class="nav-link text-dark" href="{% url 'view_sales_reports' %}">Отчеты о продажах</a>
+        </li>
+    </ul>
+</aside>
+<main class="container mt-3">
+    {% block content %}
+
+    {% endblock %}
+</main>
+</body>
+<html>

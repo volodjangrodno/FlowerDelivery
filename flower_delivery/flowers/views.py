@@ -8,10 +8,10 @@ from .models import Review
 from django.utils import timezone
 from django.db.models import Sum
 from django.shortcuts import render
-from django.http import HttpResponse
+
 
 def home(request):
-    return render(request, 'flowers/home.html')  # Убедитесь, что у вас есть шаблон home.html
+    return render(request, 'flowers/home.html')
 
 
 # Регистрация пользователя
