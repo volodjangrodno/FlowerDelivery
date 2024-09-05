@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Отчет о продажах</title>
+</head>
+<body>
+    <h1>Отчет о продажах</h1>
+    <p>Общая сумма продаж: {{ total_sales }} руб.</p>
+    <ul>
+        {% for sale in sales %}
+            <li>Заказ #{{ sale.order.id }} - {{ sale.total_amount }} руб. ({{ sale.sale_date }})</li>
+        {% empty %}
+            <li>Нет продаж за указанный период.</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'view_sales_reports' %}">Просмотреть все отчеты</a>
+</body>
+</html>

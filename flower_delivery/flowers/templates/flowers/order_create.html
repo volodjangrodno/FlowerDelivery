@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Оформление заказа</title>
+</head>
+<body>
+    <h1>Оформление заказа</h1>
+    <form method="post">
+        {% csrf_token %}
+        <h2>Выберите товары:</h2>
+        {% for product in products %}
+            <div>
+                <input type="checkbox" name="products" value="{{ product.id }}">
+                {{ product.name }} - {{ product.price }} руб.
+            </div>
+        {% endfor %}
+        <button type="submit">Оформить заказ</button>
+    </form>
+</body>
+</html>

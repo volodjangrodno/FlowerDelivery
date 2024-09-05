@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Каталог товаров</title>
+</head>
+<body>
+    <h1>Каталог товаров</h1>
+    <ul>
+        {% for product in products %}
+            <li>
+                {{ product.name }} - {{ product.price }} руб.
+                <form method="post" action="{% url 'order_create' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="products" value="{{ product.id }}">
+                    <button type="submit">Добавить в заказ</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

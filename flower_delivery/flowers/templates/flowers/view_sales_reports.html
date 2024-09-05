@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Все отчеты о продажах</title>
+</head>
+<body>
+    <h1>Все отчеты о продажах</h1>
+    <ul>
+        {% for report in reports %}
+            <li>{{ report }} - {{ report.sale_date }}</li>
+        {% empty %}
+            <li>Нет отчетов о продажах.</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'generate_sales_report' %}">Сгенерировать новый отчет</a>
+</body>
+</html>
