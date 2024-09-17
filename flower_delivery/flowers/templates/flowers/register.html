@@ -2,15 +2,29 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Регистрация</title>
+    <!-- Подключение Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa; /* Светлый фон */
+        }
+        .login-container {
+            max-width: 400px;
+            margin-top: 100px; /* Центрирование по вертикали */
+        }
+    </style>
 </head>
 <body>
-    <h1>Регистрация</h1>
-    <form method="post">
-        {% csrf_token %}
+    <div class="container login-container">
+        <h1 class="text-center">Регистрация</h1>
+        <form method="post">
+            {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Зарегистрироваться</button>
-    </form>
+        <button type="submit class="btn btn-primary btn-block">Зарегистрироваться</button>
+        </form>
+    </div>
     <a href="{% url 'login' %}">Уже есть аккаунт? Войти</a>
 </body>
 </html>

@@ -1,10 +1,10 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
+{% extends 'flowers/base.html' %}
+
+{% block title %}
     <title>Все отчеты о продажах</title>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <h1>Все отчеты о продажах</h1>
     <ul>
         {% for report in reports %}
@@ -14,5 +14,4 @@
         {% endfor %}
     </ul>
     <a href="{% url 'generate_sales_report' %}">Сгенерировать новый отчет</a>
-</body>
-</html>
+{% endblock %}

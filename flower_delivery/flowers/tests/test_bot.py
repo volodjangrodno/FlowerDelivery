@@ -3,7 +3,7 @@ from django.test import TestCase
 from telegram import Update
 from telegram.ext import CallbackContext
 from flower_delivery.flowers.models import Order
-from flower_delivery.flowers.bot import update_order_status, get_order_info, send_order_status
+from flower_delivery.bot_flower.bot import update_order_status, get_order_info, send_order_status
 
 class BotTests(TestCase):
     def setUp(self):

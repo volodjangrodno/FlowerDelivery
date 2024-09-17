@@ -1,10 +1,10 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
+{% extends 'flowers/base.html' %}
+
+{% block title %}
     <title>Оформление заказа</title>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <h1>Оформление заказа</h1>
     <form method="post">
         {% csrf_token %}
@@ -17,5 +17,4 @@
         {% endfor %}
         <button type="submit">Оформить заказ</button>
     </form>
-</body>
-</html>
+{% endblock %}

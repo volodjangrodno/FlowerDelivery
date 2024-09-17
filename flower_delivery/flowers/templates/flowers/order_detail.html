@@ -1,17 +1,40 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
+{% extends 'flowers/base.html' %}
+
+{% block title %}
     <title>Детали заказа</title>
-</head>
-<body>
-    <h1>Детали заказа #{{ order.id }}</h1>
-    <p>Статус: {{ order.status }}</p>
-    <h2>Товары в заказе:</h2>
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <div>
+            <h3 class="card-title">Заказ #{{ order.id }}</h3>
+            <p class="card-text">Статус: <span class="badge bg-success">{{ order.status }}</span></p>
+            <p class="card-text">Дата создания: {{ order.order_date|date:"d.m.Y H:i" }}</p>
+        </div>
+        <h4>Товары в заказе:</h4>
+
+
+
     <ul>
-        {% for product in order.products.all %}
-            <li>{{ product.name }} - {{ product.price }} руб.</li>
-        {% endfor %}
-    </ul>
-</body>
-</html>
+    {% for item in order.orderitem_set.all %}
+        <div class="bg-white rounded-lg shadow-md p-4" style="width: 90%; margin-left: 5%;">
+            <div class="row" style="align-items: center">
+                <div class="col-md-1">
+                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="img-fluid" style="max-height: 120px;">
+                </div>
+                <div class="col-md-9">
+                    <h5 class="card-title">{{ item.product.name }}</h5>
+                    <p class="card-text">Цена: {{ item.product.price }} руб.</p>
+                    <h6 class="card-text">Количество: {{ item.quantity }} шт.</h6>
+                    <h6 class="card-text">Сумма: {{ item.amount }} руб.</h6>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</ul>
+        <h2>Общая сумма заказа №{{ order.id }}: {{ total_price }} руб.</h2><br>
+
+        <a href="{% url 'order_history' %}" class="btn btn-primary">Назад к истории заказов</a>
+
+    </div>
+{% endblock %}

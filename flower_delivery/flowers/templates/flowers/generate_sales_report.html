@@ -1,10 +1,10 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
+{% extends 'flowers/base.html' %}
+
+{% block title %}
     <title>Генерация отчета о продажах</title>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <h1>Генерация отчета о продажах</h1>
     <form method="post" class="form-inline">
     {% csrf_token %}
@@ -19,5 +19,4 @@
     <button type="submit" class="btn btn-primary mb-2">Сгенерировать отчет</button>
 </form>
 
-</body>
-</html>
+{% endblock %}

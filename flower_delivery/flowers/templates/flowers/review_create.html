@@ -1,10 +1,10 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
+{% extends 'flowers/base.html' %}
+
+{% block title %}
     <title>Добавить отзыв о {{ product.name }}</title>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <h1>Добавить отзыв о {{ product.name }}</h1>
     <form method="post">
         {% csrf_token %}
@@ -20,5 +20,4 @@
         <textarea name="review_text" required></textarea>
         <button type="submit">Добавить отзыв</button>
     </form>
-</body>
-</html>
+{% endblock %}

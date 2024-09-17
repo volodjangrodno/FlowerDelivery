@@ -1,10 +1,10 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
+{% extends 'flowers/base.html' %}
+
+{% block title %}
     <title>Отчет о продажах</title>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <h1>Отчет о продажах</h1>
     <p>Общая сумма продаж: {{ total_sales }} руб.</p>
     <ul>
@@ -15,5 +15,4 @@
         {% endfor %}
     </ul>
     <a href="{% url 'view_sales_reports' %}">Просмотреть все отчеты</a>
-</body>
-</html>
+{% endblock %}

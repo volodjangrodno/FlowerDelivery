@@ -23,5 +23,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('flowers.urls')),  # Подключение маршрутов приложения
+    path('', include('flowers.urls')),  # Подключение маршрутов приложения flowers
+    path('bot/', include('bot_flower.urls')),  # Подключение маршрутов приложения bot_flower
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

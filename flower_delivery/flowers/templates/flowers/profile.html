@@ -1,0 +1,42 @@
+{% extends 'flowers/base.html' %}
+
+{% block title %}
+    <title>Профиль</title>
+{% endblock %}
+
+{% block content %}
+
+<body class="bg-gray-100">
+    <h1 class="text-center font-bold text-3xl my-5">Профиль пользователя</h1>
+
+    <div class="user-profile p-4 bg-white rounded-lg mb-4">
+
+        <div class="flex items-center">
+            {% if user.profile.avatar %}
+                <img src="{{ user.profile.avatar.url }}" alt="Avatar" class="w-16 h-16 rounded-full">
+            {% else %}
+                <img src="flower_delivery/media/avatars/default_user.png" alt="Default Avatar" class="w-16 h-16 rounded-full">
+            {% endif %}
+            <div class="ml-4">
+                <p>Имя и фамилия: {{ user.first_name }} {{ user.last_name }}</p>
+                <p>Электронная почта: {{ user.email }}</p>
+                <p>Роль: {{ user.groups.all|join:", " }}</p>  <!-- Предполагаем, что роли хранятся в группах -->
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{% url 'edit_profile' %}" class="btn btn-primary">Редактировать профиль</a>
+    </div>
+
+
+
+{% if user.role == 'user' %}
+    <a href="{% url 'order_history' %}">История моих заказов</a>
+{% elif user.role == 'admin' %}
+    <a href="{% url 'all_orders' %}">История всех заказов</a>
+    <a href="{% url 'sales_reports' %}">Запрос отчётов о продажах</a>
+{% endif %}
+
+</body>
+{% endblock %}
