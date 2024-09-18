@@ -13,7 +13,7 @@ class CustomUser(AbstractUser):
     email = models.EmailField(max_length=100, unique=True)
     password = models.CharField(max_length=100)
 
-    avatar = models.ImageField(upload_to='media/avatars/', default='media/avatars/default_user.png', blank=True)
+    avatar = models.ImageField(upload_to='flowers/static/flowers/img/avatars/', default='media/avatars/default_user.png', blank=True)
     ROLE_CHOICES = [
         ('user', 'Пользователь'),
         ('admin', 'Админ'),
@@ -45,12 +45,12 @@ class EditProfile(models.Model):
     username = models.CharField(max_length=100, null=True, blank=True)
     email = models.EmailField(max_length=100, null=True, blank=True)
     password = models.CharField(max_length=100, null=True, blank=True)
-    avatar = models.ImageField(upload_to='media/avatars/', null=True, blank=True)
+    avatar = models.ImageField(upload_to='flowers/static/flowers/img/avatars/', null=True, blank=True)
     first_name = models.CharField(max_length=100, null=True, blank=True)
     last_name = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
-        return f'Профиль пользователя {self.user.email}'
+        return f'Профиль пользователя {self.user.username}'
 
 # Модель товара
 class Product(models.Model):
@@ -91,9 +91,10 @@ class Order(models.Model):
     ]
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)  # Связывает заказ с пользователем
-    products = models.ManyToManyField(Product)  # Связывает заказ с продуктами
+    product = models.ManyToManyField(Product)  # Связывает заказ с продуктами
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='Новый')  # Статус заказа
     order_date = models.DateTimeField(auto_now_add=True)  # Дата заказа
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
 
     class Meta:
@@ -101,21 +102,25 @@ class Order(models.Model):
         verbose_name_plural = 'Заказы'
 
     def __str__(self):  # корректное отображение на странице
-        return f'Заказ #{self.id} от {self.user.username}'
+        return f'Заказ №{self.id} от пользователя {self.user.username}'
 
-# Модель товаров в заказе
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)  # Связывает товар с заказом
+    order = models.ForeignKey(Order, related_name='order_items',on_delete=models.CASCADE)  # Связывает товар с заказом
     product = models.ForeignKey(Product, on_delete=models.CASCADE)  # Связывает товар с продуктом
     quantity = models.PositiveIntegerField(default=1)  # Количество
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     class Meta:
         verbose_name = 'Товар в заказе'
         verbose_name_plural = 'Товары в заказе'
 
-    def __str__(self):  # корректное отображение на странице
+    def save(self, *args, **kwargs):
+        self.amount = self.quantity * self.product.price
+        self.total_price = self.amount  # Здесь можно расширить логику для общей суммы
+        super().save(*args, **kwargs)
+
+    def __str__(self):
         return f'{self.product.name} - {self.quantity} шт. на сумму {self.amount} руб. в заказе {self.order.id}'
 
 # Модель отзыва

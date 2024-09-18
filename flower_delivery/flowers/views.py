@@ -1,14 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import Product, Order
+import os
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Review
+import datetime
 from django.utils import timezone
 from django.db.models import Sum
 from .forms import CustomUserCreationForm, EditProfileForm
-from .models import Product, Order, Review, Report, SaleReport, CustomUser, OrderItem
+from .models import Product, Order, Review, Report, SaleReport, CustomUser, OrderItem, EditProfile
 from django.urls import reverse
 from django import template
 from .filters import *
@@ -59,21 +59,28 @@ def logout_view(request):
 # Профиль пользователя
 @login_required
 def profile(request):
-    return render(request, 'flowers/profile.html', {'user': request.user})
+    user_profile = EditProfile.objects.get(user=request.user)
+    return render(request, 'flowers/profile.html', {'user': request.user, 'profile': user_profile})
 
 # Редактирование профиля пользователя
 @login_required
 def edit_profile(request):
-    form = EditProfileForm()
+    user_profile, created = EditProfile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
-        user = request.user
-        user.username = request.POST['username']
-        user.email = request.POST['email']
+        user_profile.username = request.POST['username']
+        user_profile.email = request.POST['email']
         if 'avatar' in request.FILES:
-            user.avatar = request.FILES['avatar']
-        user.save()
+            # Сохраните аватар с новым именем
+            avatar_file = request.FILES['avatar']
+            file_extension = os.path.splitext(avatar_file.name)[1]
+            avatar_file.name = f"avatar_{user_profile.username}{file_extension}"  # Переименовываем файл
+            user_profile.avatar = avatar_file
+        user_profile.first_name = request.POST['first_name']
+        user_profile.last_name = request.POST['last_name']
+        user_profile.save()
         return redirect('profile')
-    return render(request, 'flowers/edit_profile.html', {'user': request.user}, {'form': form})
+    return render(request, 'flowers/edit_profile.html',
+                  {'user': request.user, 'form': EditProfileForm(instance=user_profile)})
 
 # Просмотр каталога товаров
 def catalog(request):
@@ -164,7 +171,11 @@ def get_product(product_id):
 @login_required
 def order_create(request):
     if request.method == 'POST':
-        product_ids = request.POST.getlist('products')
+        cart = request.session.get('cart', {})
+
+        if not cart:
+            messages.info(request, 'Корзина пуста.')
+            return redirect('catalog')
 
         if not request.user.is_authenticated:
             messages.info(request, 'Пожалуйста, войдите в аккаунт для оформления заказа.')
@@ -174,29 +185,69 @@ def order_create(request):
         order = Order.objects.create(user=request.user)
 
         # Получение объектов продуктов на основе идентификаторов
-        products = Product.objects.filter(id__in=product_ids)
+        total_price = 0
+        for product_id, quantity in cart.items():
+            product = get_object_or_404(Product, id=product_id)
+            amount = product.price * quantity  # Вычисляем сумму для каждого продукта
+            OrderItem.objects.create(order=order, product=product, quantity=quantity, amount=amount)
+            total_price += amount  # суммируем в общую сумму
 
-        # Установка фильтрованных продуктов в заказ
-        order.products.set(products)  # или order.products.set(product_ids) если поле - ManyToMany, а не ForeignKey
-        order.save()
+        # Сохранение общей суммы в заказе
+        order.total_price = total_price
+        order.save()  # Сохраняем заказ с обновленной общей суммой
 
         # Очищаем корзину, если указано
         if 'clear_cart' in request.POST:
             request.session['cart'] = {}  # Очищаем корзину
 
         # Перенаправление на страницу с итогами заказа
-        return redirect('order_detail', order_id=order.id)
+        return redirect('order_detail', order_id=order.id, total_price=total_price)
 
     products = Product.objects.all()  # Здесь можете оставить или отфильтровать
     return render(request, 'flowers/order_detail.html', {'products': products})
+
 # Просмотр деталей заказа
 @login_required
 def order_detail(request, order_id):
-    order = Order.objects.get(id=order_id)
-    quantity = order.orderitem_set.count()
-    amount = (item.quantity * item.product.price for item in order.orderitem_set.all())
-    total_price = sum(amount)
-    return render(request, 'flowers/order_detail.html', {'order': order, 'quantity': quantity, 'amount': amount, 'total_price': total_price})
+    order = get_object_or_404(Order, id=order_id)
+    order_items = order.order_items.all()
+
+
+    return render(request, 'flowers/order_detail.html', {'order': order, 'order_items': order_items})
+
+# Повторение заказа
+@login_required
+def repeat_order(request, order_id):
+    # Извлечение существующего заказа
+    existing_order = get_object_or_404(Order, id=order_id)
+
+    # Создание нового заказа
+    new_order = Order.objects.create(
+        user=existing_order.user,
+        total_price=existing_order.total_price,
+        order_date=datetime.datetime.now(),
+        status='Новый',
+
+    )
+
+    # Копирование данных из существующего заказа в новый
+    existing_order_items = OrderItem.objects.filter(order=existing_order)
+    for item in existing_order_items:
+        OrderItem.objects.create(
+            order=new_order,
+            product=item.product,
+            quantity=item.quantity,
+            amount=item.amount,
+        )
+
+    # Сохранение нового заказа
+    new_order.save()
+
+    # Отправка сообщения пользователю
+    messages.success(request, 'Заказ успешно повторен!')
+
+    # Перенаправление на страницу с деталями нового заказа
+    return redirect('order_detail', order_id=new_order.id)
 
 # Просмотр истории заказов
 @login_required
@@ -207,7 +258,10 @@ def order_history(request):
         return redirect('login')  # Перенаправление на страницу входа
     return render(request, 'flowers/order_history.html', {'orders': orders})
 
-
+@login_required
+def all_orders_history(request):
+    orders = Order.objects.all()
+    return render(request, 'flowers/all_orders_history.html', {'orders': orders})
 
 # Добавление отзыва
 @login_required

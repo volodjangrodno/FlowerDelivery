@@ -1,10 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Редактирование профиля</title>
-</head>
-<body>
-    <h1>Редактирование профиля</h1>
-</body>
-</html>
+{% extends 'flowers/base.html' %}  
+
+{% block title %}  
+    <title>Редактировать профиль</title>  
+{% endblock %}  
+
+{% block content %}  
+<body class="bg-gray-100">  
+    <h1 class="text-center font-bold text-3xl my-5">Редактировать профиль пользователя</h1>  
+
+    <div class="container">  
+        <form method="POST" enctype="multipart/form-data">  
+            {% csrf_token %}  
+            <div class="form-group">  
+                <label>Имя пользователя:</label>
+                <input type="text" name="username" class="form-control" value="{{ form.instance.username }}">  
+            </div>  
+            <div class="form-group">  
+                <label>Электронная почта:</label>
+                <input type="email" name="email" class="form-control" value="{{ form.instance.email }}">  
+            </div>  
+            <div class="form-group">  
+                <label>Имя:</label>
+                <input type="text" name="first_name" class="form-control" value="{{ form.instance.first_name }}">  
+            </div>  
+            <div class="form-group">  
+                <label>Фамилия:</label>
+                <input type="text" name="last_name" class="form-control" value="{{ form.instance.last_name }}">  
+            </div>  
+            <div class="form-group">  
+                <label>Аватар:</label>
+                <input type="file" name="avatar" class="form-control">  
+            </div>  
+            <button type="submit" class="btn btn-primary mt-3">Сохранить изменения</button>  
+        </form>  
+    </div>  
+
+    <div class="text-center mt-4">  
+        <a href="{% url 'profile' %}" class="btn btn-secondary">Назад к профилю</a>  
+    </div>  
+</body>  
+{% endblock %}

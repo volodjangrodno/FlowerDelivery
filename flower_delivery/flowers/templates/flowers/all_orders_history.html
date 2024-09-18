@@ -1,20 +1,20 @@
 {% extends 'flowers/base.html' %}
 
 {% block title %}
-    <title>История моих заказов</title>
+    <title>История всех заказов</title>
 {% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-        <a href="{% url 'profile' %}" class="btn btn-danger me-md-2" type="button">Назад в профиль</a>
-    </div>
-    <h1 class="text-center mb-4">История моих заказов</h1>
+    <div class="container mt-5">
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a href="{% url 'profile' %}" class="btn btn-danger me-md-2" type="button">Назад в профиль</a>
+        </div>
+    <h1 class="text-center mb-4">История всех заказов</h1>
     {% for order in orders %}
         <div class="card mb-3">
             <div class="card-body d-flex justify-content-between align-items-center">
                 <div>
-                    <h5 class="card-title">Заказ №{{ order.id }}</h5>
+                    <h5 class="card-title">Заказ №{{ order.id }} от пользователя {{ order.user }}</h5>
                     <p class="card-text">Статус: <span class="badge bg-success">{{ order.status }}</span></p>
                     <p class="card-text">Дата создания: {{ order.order_date|date:"d.m.Y H:i" }}</p>
                 </div>
@@ -23,7 +23,7 @@
         </div>
     {% empty %}
         <div class="alert alert-warning" role="alert">
-            У вас нет заказов в истории.
+            <p>Нет заказов в истории.</p>
         </div>
     {% endfor %}
 </div>
