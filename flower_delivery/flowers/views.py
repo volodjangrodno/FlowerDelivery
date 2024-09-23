@@ -4,11 +4,13 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 import os
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-import datetime
-from django.utils import timezone
+from datetime import datetime, timedelta
+from django.db import transaction
 from django.db.models import Sum
 from .forms import CustomUserCreationForm, EditProfileForm
 from .models import Product, Order, Review, Report, SaleReport, CustomUser, OrderItem, EditProfile
+from django.utils import timezone
+from django.utils.timezone import make_aware
 from django.urls import reverse
 from django import template
 from .filters import *
@@ -252,7 +254,14 @@ def repeat_order(request, order_id):
 # Просмотр истории заказов
 @login_required
 def order_history(request):
-    orders = Order.objects.filter(user=request.user)
+
+    sort_order = request.GET.get('sort', 'asc')  # по умолчанию сортируем по убыванию
+
+    if sort_order == 'asc':
+        orders = Order.objects.filter(user=request.user).order_by('-order_date')
+    else:
+        orders = Order.objects.filter(user=request.user).order_by('order_date')
+
     if not request.user.is_authenticated:
         messages.info(request, 'Пожалуйста, войдите в аккаунт для оформления заказа.')
         return redirect('login')  # Перенаправление на страницу входа
@@ -260,9 +269,39 @@ def order_history(request):
 
 @login_required
 def all_orders_history(request):
-    orders = Order.objects.all()
-    return render(request, 'flowers/all_orders_history.html', {'orders': orders})
+    # Получаем параметры сортировки и фильтрации
+    sort_order = request.GET.get('sort', 'desc')  # По умолчанию сортируем по убыванию (desc)
+    username_filter = request.GET.get('username', '')
 
+    # Получаем даты из параметров запроса
+    date_from = request.GET.get('date_from', '')
+    date_to = request.GET.get('date_to', '')
+
+    # Запрос для получения заказов
+    orders = Order.objects.all()
+
+    # Применяем фильтр по имени пользователя, если он задан
+    if username_filter:
+        orders = orders.filter(user__username__icontains=username_filter)
+
+    if date_from:
+        orders = orders.filter(order_date__gte=date_from)  # "с"
+    if date_to:
+        orders = orders.filter(order_date__lte=date_to)  # "по"
+
+    # Применяем сортировку
+    if sort_order == 'asc':
+        orders = orders.order_by('order_date')  # Сортировка по возрастанию
+    else:
+        orders = orders.order_by('-order_date')  # Сортировка по убыванию
+
+    return render(request, 'flowers/all_orders_history.html', {
+        'orders': orders,
+        'username_filter': username_filter,
+        'sort_order': sort_order,
+        'date_from': date_from,
+        'date_to': date_to,
+    })
 # Добавление отзыва
 @login_required
 def review_create(request, product_id):
@@ -296,17 +335,126 @@ def product_detail(request, product_id):
 
 # Генерация отчета о продажах
 @login_required
+def all_orders_history(request):
+    # Получаем параметры фильтрации и сортировки
+    sort_order = request.GET.get('sort', 'desc')
+    username_filter = request.GET.get('username', '')
+    date_from = request.GET.get('date_from', '')
+    date_to = request.GET.get('date_to', '')
+
+    # Запрос для получения заказов
+    orders = Order.objects.all()
+
+    # Применяем фильтрацию
+    if username_filter:
+        orders = orders.filter(user__username__icontains=username_filter)
+
+        # Проверяем и применяем фильтрацию по дате "С"
+    if date_from:
+        orders = orders.filter(order_date__gte=date_from)  # Включительно
+
+        # Проверяем и применяем фильтрацию по дате "По"
+        if date_to:
+            # Преобразуем date_to в datetime и добавляем один день
+            date_to_datetime = datetime.strptime(date_to, '%Y-%m-%d') + timedelta(days=1)
+            orders = orders.filter(order_date__lt=date_to_datetime)  # Включительно до конца дня
+
+    # Сортируем заказы
+    orders = orders.order_by('-order_date' if sort_order == 'desc' else 'order_date')
+
+    # Количество отфильтрованных заказов
+    sales_count = orders.count()  # Подсчет количества заказов
+
+    return render(request, 'flowers/all_orders_history.html', {
+        'orders': orders,
+        'username_filter': username_filter,
+        'sort_order': sort_order,
+        'date_from': date_from,
+        'date_to': date_to,
+        'sales_count': sales_count,  # Передаем количество в контексте
+    })
+
+
+
+# Генерация отчета о продажах
+@login_required
 def generate_sales_report(request):
     if request.method == 'POST':
-        start_date = request.POST['start_date']
-        end_date = request.POST['end_date']
-        sales = SaleReport.objects.filter(sale_date__range=[start_date, end_date])
-        total_sales = sales.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
-        return render(request, 'flowers/sales_report.html', {'sales': sales, 'total_sales': total_sales})
-    return render(request, 'flowers/generate_sales_report.html')
+        # Получаем параметры от формы
+        username_filter = request.POST.get('username', '')
+        start_date_str = request.POST.get('date_from', '')
+        end_date_str = request.POST.get('date_to', '')
 
-# Просмотр всех отчетов о продажах
+        # Проверка наличия значений для дат
+        if not start_date_str or not end_date_str:
+            # Обработайте ошибку, например, вернув ответ с сообщением об ошибке
+            return render(request, 'flowers/generate_sales_report.html', {
+                'error': 'Пожалуйста, введите обе даты.',
+                'username_filter': username_filter,
+                'date_from': start_date_str,
+                'date_to': end_date_str,
+            })
+
+            # Преобразуем строки в осведомленные временные метки
+        start_date = make_aware(datetime.strptime(start_date_str, '%Y-%m-%d'))
+        end_date = make_aware(datetime.strptime(end_date_str, '%Y-%m-%d')) + timedelta(days=1)
+
+        # Фильтр продаж на основе дат
+        orders = Order.objects.filter(order_date__range=[start_date, end_date])
+
+        # Подсчет total_sales и количества заказов
+        total_sales = orders.aggregate(Sum('total_price'))['total_price__sum'] or 0
+        count = orders.count()
+
+        # Собираем все ID заказов в текстовый список
+        orders_ids = ', '.join(str(order.id) for order in orders)
+
+        # Сохраняем отчет в таблице Report
+        with transaction.atomic():  # Обеспечим целостность данных
+            report = Report.objects.create(
+                orders=orders_ids,
+                total_sales=total_sales,
+                count=count,
+                start_date=start_date,
+                end_date=end_date,
+                report_date=datetime.now()
+            )
+
+
+
+            # Отправляем данные на страницу с отчётом
+        return render(request, 'flowers/sales_report.html', {
+            'orders': orders,
+            'total_sales': total_sales,
+            'count': count,
+            'username_filter': username_filter,
+            'date_from': start_date,
+            'date_to': end_date,
+            'report_date': report.report_date.strftime('%Y-%m-%d %H:%M:%S'),
+        })
+
+        # Если GET-запрос, заполняем фильтры из URL
+    username_filter = request.GET.get('username', '')
+    date_from = request.GET.get('date_from', '')
+    date_to = request.GET.get('date_to', '')
+
+    return render(request, 'flowers/generate_sales_report.html', {
+        'username_filter': username_filter,
+        'date_from': date_from,
+        'date_to': date_to,
+    })
+
+# Просмотр списка всех отчётов о продажах
 @login_required
 def view_sales_reports(request):
-    reports = SaleReport.objects.all()
+    reports = Report.objects.all()
     return render(request, 'flowers/view_sales_reports.html', {'reports': reports})
+
+# Просмотр деталей отчета о продажах
+def sales_report_detail(request, report_id):
+    report = get_object_or_404(Report, id=report_id)
+    return render(request, 'flowers/sales_report_detail.html', {
+        'report': report,
+        'report_id': report_id,
+        'report_date': report.report_date.strftime('%Y-%m-%d %H:%M:%S'),
+    })

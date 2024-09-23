@@ -25,7 +25,8 @@ urlpatterns = [
     path('product/<int:product_id>/', views.product_detail, name='product_detail'),
     path('product/<int:product_id>/review/', views.review_create, name='review_create'),
     path('sales/report/generate/', views.generate_sales_report, name='generate_sales_report'),  # Генерация отчета
-    path('sales/reports/', views.view_sales_reports, name='view_sales_reports'),  # Просмотр отчетов
+    path('sales/report/<int:report_id>/', views.sales_report_detail, name='sales_report_detail'),  # Просмотр деталей отчета
+    path('sales/reports/', views.view_sales_reports, name='view_sales_reports'),  # Просмотр всех отчетов
 ]
 
 if settings.DEBUG:

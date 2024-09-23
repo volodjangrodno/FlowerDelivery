@@ -10,6 +10,11 @@
         <a href="{% url 'profile' %}" class="btn btn-danger me-md-2" type="button">Назад в профиль</a>
     </div>
     <h1 class="text-center mb-4">История моих заказов</h1>
+    <!-- Кнопки для сортировки -->
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end mb-3">
+            <a href="?sort=asc" class="btn btn-secondary">По убыванию</a>
+            <a href="?sort=desc" class="btn btn-secondary">По возрастанию</a>
+        </div>
     {% for order in orders %}
         <div class="card mb-3">
             <div class="card-body d-flex justify-content-between align-items-center">

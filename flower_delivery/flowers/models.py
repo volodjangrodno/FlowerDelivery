@@ -140,10 +140,11 @@ class Review(models.Model):
 
 # Модель отчета
 class Report(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)  # Связывает отчет с заказом
-    sale_data = models.DecimalField(max_digits=10, decimal_places=2)  # Данные по продажам
-    profit = models.DecimalField(max_digits=10, decimal_places=2)  # Прибыль
-    expenses = models.DecimalField(max_digits=10, decimal_places=2)  # Расходы
+    orders = models.TextField(default='')  # Хранит все IDs заказов в виде строки
+    total_sales = models.DecimalField(max_digits=10, decimal_places=2)  # Общая сумма продаж
+    count = models.IntegerField(default=0)  # Количество заказов в отчёте
+    start_date = models.DateField(default=datetime.datetime.now)  # Дата начала продаж
+    end_date = models.DateField(default=datetime.datetime.now)  # Дата окончания продаж
     report_date = models.DateTimeField(auto_now_add=True)  # Дата создания отчета
 
     class Meta:
@@ -151,7 +152,7 @@ class Report(models.Model):
         verbose_name_plural = 'Отчеты'
 
     def __str__(self):  # корректное отображение на странице
-        return f'Отчет для заказа #{self.order.id} от {self.report_date}'
+        return f'Отчет {self.id} о продажах от {self.report_date}'
 
 class SaleReport(models.Model):
     order = models.ForeignKey('Order', on_delete=models.CASCADE)

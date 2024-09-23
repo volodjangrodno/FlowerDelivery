@@ -6,17 +6,23 @@
 
 {% block content %}
     <h1>Генерация отчета о продажах</h1>
-    <form method="post" class="form-inline">
-    {% csrf_token %}
-    <div class="form-group mb-2">
-        <label for="start_date" class="sr-only">Дата начала:</label>
-        <input type="date" name="start_date" class="form-control" required>
-    </div>
-    <div class="form-group mx-sm-3 mb-2">
-        <label for="end_date" class="sr-only">Дата окончания:</label>
-        <input type="date" name="end_date" class="form-control" required>
-    </div>
-    <button type="submit" class="btn btn-primary mb-2">Сгенерировать отчет</button>
-</form>
 
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="username">Фильтр по имени пользователя:</label>
+            <input type="text" name="username" id="username" value="{{ username_filter }}" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="date_from">Дата с:</label>
+            <input type="date" name="date_from" id="date_from" value="{{ date_from }}" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="date_to">Дата по:</label>
+            <input type="date" name="date_to" id="date_to" value="{{ date_to }}" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-danger">Сгенерировать отчёт</button>
+    </form>
+
+    <a href="{% url 'all_orders_history' %}">Назад к истории заказов</a>
 {% endblock %}
