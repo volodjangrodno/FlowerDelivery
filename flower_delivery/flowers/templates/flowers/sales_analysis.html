@@ -1,0 +1,97 @@
+{% extends 'flowers/base.html' %}
+
+{% block title %}
+    <title>Анализ продаж</title>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1 class="mt-4 mb-4">Анализ продаж</h1>
+
+        <form method="GET" action="" class="mb-4">
+            <div class="form-row align-items-end">
+                <div class="form-group col-md-4">
+                    <label for="year">Год:</label>
+                    <select name="year" id="year" class="form-control">
+                        {% for y in years %}
+                            <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="month">Месяц:</label>
+                    <select name="month" id="month" class="form-control">
+                        {% for m in months %}
+                            <option value="{{ forloop.counter }}" {% if forloop.counter == selected_month %}selected{% endif %}>{{ m }}</option>
+                        {% endfor %}
+                    </select>
+                </div><br>
+
+                <div class="form-group col-md-4 text-right">
+                    <label>&nbsp;</label> <!-- Заполнитель для выравнивания -->
+                    <button type="submit" class="btn btn-primary btn-block">Показать</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Продажи по дням</h2>
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>День</th>
+                            <th>Общие продажи</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in total_sales_data %}
+                            <tr>
+                                <td>{{ data.day }}</td>
+                                <td>{{ data.total_sales|floatformat:2 }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="2">Нет данных за выбранный месяц.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h2>Продажи по товарам</h2>
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Название товара</th>
+                            <th>Общие продажи</th>
+                            <th>Количество</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in product_sales_data %}
+                            <tr>
+                                <td>{{ product.product__name }}</td>
+                                <td>{{ product.total_sales|floatformat:2 }}</td>
+                                <td>{{ product.total_quantity }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="3">Нет данных за выбранный месяц.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+
+            <div class="col-md-6">
+                <h2>График продаж по дням</h2>
+                <img src="{{ daily_sales_image }}" alt="График продаж по дням" class="img-fluid" />
+
+                <h2>График продаж по товарам</h2>
+                <img src="{{ product_sales_image }}" alt="График продаж по товарам" class="img-fluid" />
+            </div>
+        </div>
+    </div>
+{% endblock %}

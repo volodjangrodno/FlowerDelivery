@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
                 ('username', models.CharField(blank=True, max_length=100, null=True)),
                 ('email', models.EmailField(blank=True, max_length=100, null=True)),
                 ('password', models.CharField(blank=True, max_length=100, null=True)),
-                ('avatar', models.ImageField(blank=True, null=True, upload_to='media/avatars/')),
+                ('avatar', models.ImageField(blank=True, null=True, upload_to='media/catalog/')),
                 ('first_name', models.CharField(blank=True, max_length=100, null=True)),
                 ('last_name', models.CharField(blank=True, max_length=100, null=True)),
                 ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),

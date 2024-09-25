@@ -26,7 +26,7 @@ class CustomUserCreationForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password1"])  # Присваиваем пароль в виде хеша
-        user.avatar = 'media/avatars/default_user.png'  # Загружаем изображение по умолчанию
+        user.avatar = 'media/flowers/static/flowers/img/avatars/default_user.png'  # Загружаем изображение по умолчанию
         user.role = 'user'  # Устанавливаем роль по умолчанию
         if commit:
             user.save()
@@ -43,6 +43,8 @@ class EditProfileForm(ModelForm):
             'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Введите ваше имя'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Введите вашу фамилию'}),
             'avatar': forms.FileInput(attrs={'class': 'form-control', 'placeholder': 'Загрузите ваше фото'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Введите ваш номер телефона'}),
+            'address': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Введите ваш адрес'})
         }
 
 

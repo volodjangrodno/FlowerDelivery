@@ -6,6 +6,11 @@
 
 {% block content %}
     <div class="container mt-5">
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a href="{% url 'all_orders_history' %}" class="btn btn-danger me-md-2" type="button">Назад к списку заказов</a>
+        </div>
+    </div>
+    <div class="container mt-5">
         <h1>Отчет о продажах №{{ report_id }} от {{ report_date }}</h1>
 
         <ul>

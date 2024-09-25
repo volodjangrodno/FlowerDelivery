@@ -59,18 +59,18 @@
                   <li><a class="dropdown-item" href="#">Что-то еще здесь</a></li>
                 </ul>
             </li>
-              <ul class="nav">
-              {% if user.is_authenticated %}
-                <li class="nav-item">
-                  <a class="nav-link" href="/logout">Выйти</a>
-                </li>
-              {% else %}
-                <li class="nav-item">
-                  <a class="nav-link" href="/login">Войти</a>
-                </li>
-              {% endif %}
-              </ul>
-            </div>
+                  <ul class="nav">
+                  {% if user.is_authenticated %}
+                    <li class="nav-item">
+                      <a class="nav-link" href="/logout">Выйти</a>
+                    </li>
+                  {% else %}
+                    <li class="nav-item">
+                      <a class="nav-link" href="/login">Войти</a>
+                    </li>
+                  {% endif %}
+                  </ul>
+        </div>
       <a class="navbar-brand" href="#"></a>
       <form class="d-flex" role="search">
           <input class="form-control me-2" type="search" placeholder="Поиск" aria-label="Поиск">

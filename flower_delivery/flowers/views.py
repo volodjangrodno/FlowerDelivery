@@ -2,15 +2,20 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 import os
+import matplotlib.pyplot as plt
+import numpy as np
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.conf import settings # Импортируем settings
 from datetime import datetime, timedelta
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import Sum, F
 from .forms import CustomUserCreationForm, EditProfileForm
 from .models import Product, Order, Review, Report, SaleReport, CustomUser, OrderItem, EditProfile
 from django.utils import timezone
 from django.utils.timezone import make_aware
+from django.db.models.functions import ExtractDay  # Импортируем ExtractDay
+import calendar
 from django.urls import reverse
 from django import template
 from .filters import *
@@ -79,6 +84,8 @@ def edit_profile(request):
             user_profile.avatar = avatar_file
         user_profile.first_name = request.POST['first_name']
         user_profile.last_name = request.POST['last_name']
+        user_profile.address = request.POST['address']
+        user_profile.phone_number = request.POST['phone_number']
         user_profile.save()
         return redirect('profile')
     return render(request, 'flowers/edit_profile.html',
@@ -173,6 +180,12 @@ def get_product(product_id):
 @login_required
 def order_create(request):
     if request.method == 'POST':
+        # Получаем данные из формы
+        delivery_method = request.POST.get('delivery_method')
+        payment_method = request.POST.get('payment_method')
+        address = request.POST.get('address', '')  # Получаем адрес, если он есть
+        phone_number = request.POST.get('phone_number', '')  # Получаем телефон, если он есть
+
         cart = request.session.get('cart', {})
 
         if not cart:
@@ -184,10 +197,21 @@ def order_create(request):
             return redirect('login')  # Перенаправление на страницу входа
 
         # Создание нового заказа
-        order = Order.objects.create(user=request.user)
+        order = Order.objects.create(
+            user=request.user,
+            total_price=0,  # Сумма будет рассчитана позже
+            order_date=datetime.now(),
+            status='Новый',
+            delivery_method=delivery_method,
+            payment_method=payment_method,
+            address=address if delivery_method == 'courier' else None,  # Сохраняем адрес только для курьерской доставки
+            phone_number=phone_number if delivery_method == 'courier' else None,  # Сохраняем телефон только для курьерской доставки
+        )
+
 
         # Получение объектов продуктов на основе идентификаторов
         total_price = 0
+
         for product_id, quantity in cart.items():
             product = get_object_or_404(Product, id=product_id)
             amount = product.price * quantity  # Вычисляем сумму для каждого продукта
@@ -203,9 +227,9 @@ def order_create(request):
             request.session['cart'] = {}  # Очищаем корзину
 
         # Перенаправление на страницу с итогами заказа
-        return redirect('order_detail', order_id=order.id, total_price=total_price)
+        return redirect('order_detail', order_id=order.id)
 
-    products = Product.objects.all()  # Здесь можете оставить или отфильтровать
+    products = Product.objects.filter(in_stock=True)  # Здесь можете оставить или отфильтровать
     return render(request, 'flowers/order_detail.html', {'products': products})
 
 # Просмотр деталей заказа
@@ -451,6 +475,7 @@ def view_sales_reports(request):
     return render(request, 'flowers/view_sales_reports.html', {'reports': reports})
 
 # Просмотр деталей отчета о продажах
+@login_required
 def sales_report_detail(request, report_id):
     report = get_object_or_404(Report, id=report_id)
     return render(request, 'flowers/sales_report_detail.html', {
@@ -458,3 +483,82 @@ def sales_report_detail(request, report_id):
         'report_id': report_id,
         'report_date': report.report_date.strftime('%Y-%m-%d %H:%M:%S'),
     })
+
+# Аналитика продаж
+@login_required
+def sales_analysis(request):
+    current_year = datetime.now().year
+    year = request.GET.get('year', current_year)
+    month = request.GET.get('month', datetime.now().month)
+
+    # Получение продаж по дням за выбранный месяц и год
+    total_sales_data = Order.objects.filter(order_date__year=year, order_date__month=month)\
+        .annotate(day=F('order_date__day'))\
+        .values('day')\
+        .annotate(total_sales=Sum('total_price'))\
+        .order_by('day')
+
+    # Получение продаж по товарам за месяц
+    product_sales_data = OrderItem.objects.filter(order__order_date__year=year, order__order_date__month=month)\
+        .values('product__name')\
+        .annotate(total_sales=Sum('total_price'), total_quantity=Sum('quantity'))\
+        .order_by('product__name')
+
+    # Установите использование "Agg" backend для Matplotlib
+    plt.switch_backend('Agg')
+
+    # Создание графика "Продажи по дням месяца"
+    days = [data['day'] for data in total_sales_data]
+    sales = [data['total_sales'] for data in total_sales_data]
+
+    plt.figure(figsize=(8, 4))
+    plt.plot(days, sales, marker = 'o')
+    plt.title('Продажи по дням месяца')
+    plt.xlabel('Дни месяца')
+    plt.ylabel('Общие суммы продаж')
+    plt.xticks(np.arange(1, 32, 1))  # Установить метки по оси X от 1 до 31
+    plt.grid()
+
+    # Определите путь к директории для сохранения графиков
+    sales_directory = os.path.join(settings.MEDIA_ROOT, 'sales/analysis')
+
+    # Проверьте, существует ли директория, если нет - создайте её
+    if not os.path.exists(sales_directory):
+        os.makedirs(sales_directory)
+
+        # Укажите полный путь для сохранения изображения
+    daily_sales_image_path = os.path.join(sales_directory, 'daily_sales.png')
+
+    # Теперь сохраните изображение
+    plt.savefig(daily_sales_image_path)
+    plt.close()
+
+    # Создание гистограммы "Продажи по товарам"
+    products = [product['product__name'] for product in product_sales_data]
+    quantities = [product['total_quantity'] for product in product_sales_data]
+
+    plt.figure(figsize=(8, 4))
+    plt.bar(products, quantities, color='skyblue')
+    plt.title('Продажи по товарам')
+    plt.xlabel('Название товара')
+    plt.ylabel('Количество в заказах')
+    plt.xticks(rotation=45)
+    plt.grid(axis='y')
+
+    # Сохраняем изображение
+    product_sales_image_path = os.path.join(sales_directory, 'product_sales.png')
+    plt.savefig(product_sales_image_path)
+    plt.close()
+
+    context = {
+        'total_sales_data': total_sales_data,
+        'product_sales_data': product_sales_data,
+        'years': range(2020, current_year + 1),
+        'months': list(calendar.month_name)[1:],  # Список месяцев
+        'selected_year': year,
+        'selected_month': month,
+        'daily_sales_image': os.path.join(settings.MEDIA_URL, 'sales/analysis/daily_sales.png'),
+        'product_sales_image': os.path.join(settings.MEDIA_URL, 'sales/analysis/product_sales.png'),
+    }
+
+    return render(request, 'flowers/sales_analysis.html', context)

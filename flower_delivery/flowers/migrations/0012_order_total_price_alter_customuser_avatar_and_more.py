@@ -18,11 +18,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='customuser',
             name='avatar',
-            field=models.ImageField(blank=True, default='media/avatars/default_user.png', upload_to='flowers/static/flowers/img/avatars/'),
+            field=models.ImageField(blank=True, default='media/catalog/default_user.png', upload_to='flowers/static/flowers/img/catalog/'),
         ),
         migrations.AlterField(
             model_name='editprofile',
             name='avatar',
-            field=models.ImageField(blank=True, null=True, upload_to='flowers/static/flowers/img/avatars/'),
+            field=models.ImageField(blank=True, null=True, upload_to='flowers/static/flowers/img/catalog/'),
         ),
     ]

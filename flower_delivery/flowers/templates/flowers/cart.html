@@ -38,6 +38,37 @@
             <form action="{% url 'order_create' %}" method="post">
                 {% csrf_token %}
                 <input type="hidden" name="clear_cart" value="true"> <!-- Скрытое поле для указания очистки корзины -->
+
+                <!-- Способы доставки -->
+                <h4>Способ доставки:</h4>
+                <div>
+                    <label>
+                        <input type="radio" name="delivery_method" value="pickup" checked onclick="toggleDeliveryFields()"> Самовывоз
+                    </label>
+                    <label>
+                        <input type="radio" name="delivery_method" value="courier" onclick="toggleDeliveryFields()"> Доставка курьером
+                    </label>
+                </div>
+
+                <div id="courierFields" style="display: none;">
+                    <h4>Введите данные для доставки:</h4>
+                    <label for="address">Адрес:</label>
+                    <input type="text" name="address" id="address" value="{{ user.editprofile.address }}" class="form-control" required>
+                    <label for="phone">Номер телефона:</label>
+                    <input type="text" name="phone_number" id="phone_number" value="{{ user.editprofile.phone_number }}" class="form-control" required>
+                </div>
+
+                <!-- Способы оплаты -->
+                <h4>Способ оплаты:</h4>
+                <div>
+                    <label>
+                        <input type="radio" name="payment_method" value="cash" checked> Наличными
+                    </label>
+                    <label>
+                        <input type="radio" name="payment_method" value="card"> Картой
+                    </label>
+                </div><br>
+
                 <button type="submit" class="btn btn-primary">Оформить заказ</button>
             </form>
         </div>
@@ -56,5 +87,15 @@
             <a href="{% url 'catalog' %}" class="btn btn-primary">Вернуться в каталог</a>
         </div>
     {% endif %}
+<script>
+    function toggleDeliveryFields() {
+        var courierFields = document.getElementById('courierFields');
+        if (document.querySelector('input[name="delivery_method"]:checked').value === 'courier') {
+            courierFields.style.display = 'block';
+        } else {
+            courierFields.style.display = 'none';
+        }
+    }
+</script>
 </body>
 {% endblock %}

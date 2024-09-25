@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='customuser',
             name='avatar',
-            field=models.ImageField(blank=True, null=True, upload_to='media/avatars/'),
+            field=models.ImageField(blank=True, null=True, upload_to='media/catalog/'),
         ),
         migrations.AlterField(
             model_name='customuser',

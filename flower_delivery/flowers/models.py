@@ -13,7 +13,7 @@ class CustomUser(AbstractUser):
     email = models.EmailField(max_length=100, unique=True)
     password = models.CharField(max_length=100)
 
-    avatar = models.ImageField(upload_to='flowers/static/flowers/img/avatars/', default='media/avatars/default_user.png', blank=True)
+    avatar = models.ImageField(upload_to='media/flowers/static/flowers/img/avatars/', default='media/flowers/static/flowers/img/avatars/default_user.png', blank=True)
     ROLE_CHOICES = [
         ('user', 'Пользователь'),
         ('admin', 'Админ'),
@@ -45,9 +45,11 @@ class EditProfile(models.Model):
     username = models.CharField(max_length=100, null=True, blank=True)
     email = models.EmailField(max_length=100, null=True, blank=True)
     password = models.CharField(max_length=100, null=True, blank=True)
-    avatar = models.ImageField(upload_to='flowers/static/flowers/img/avatars/', null=True, blank=True)
+    avatar = models.ImageField(upload_to='media/flowers/static/flowers/img/avatars/', null=True, blank=True)
     first_name = models.CharField(max_length=100, null=True, blank=True)
     last_name = models.CharField(max_length=100, null=True, blank=True)
+    address = models.CharField(max_length=100, null=True, blank=True)
+    phone_number = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return f'Профиль пользователя {self.user.username}'
@@ -56,7 +58,7 @@ class EditProfile(models.Model):
 class Product(models.Model):
     name = models.CharField(max_length=100)  # Название товара
     price = models.DecimalField(max_digits=10, decimal_places=2)  # Цена товара
-    image = models.ImageField(upload_to='flowers/static/flowers/img/')  # Изображение товара
+    image = models.ImageField(upload_to='static/flowers/img/catalog/')  # Изображение товара
 
     class Meta:
         verbose_name = 'Товар'
@@ -73,6 +75,7 @@ class Cart(models.Model):
     quantity = models.PositiveIntegerField(default=1)
     amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
 
     class Meta:
         verbose_name = 'Корзина'
@@ -95,6 +98,11 @@ class Order(models.Model):
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='Новый')  # Статус заказа
     order_date = models.DateTimeField(auto_now_add=True)  # Дата заказа
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    delivery_method = models.CharField(max_length=100, default='Самовывоз')
+    address = models.CharField(max_length=255, blank=True, null=True)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    delivery_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    payment_method = models.CharField(max_length=100, default='Наличные')
 
 
     class Meta:
