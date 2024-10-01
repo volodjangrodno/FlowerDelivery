@@ -22,6 +22,7 @@ urlpatterns = [
     path('order/history/', views.order_history, name='order_history'),
     path('all_orders_history/', views.all_orders_history, name='all_orders_history'),
     path('order/<int:order_id>/', views.order_detail, name='order_detail'),
+    path('change_status/', views.change_status, name='change_status'),
     path('product/<int:product_id>/', views.product_detail, name='product_detail'),
     path('product/<int:product_id>/review/', views.review_create, name='review_create'),
     path('sales/report/generate/', views.generate_sales_report, name='generate_sales_report'),  # Генерация отчета

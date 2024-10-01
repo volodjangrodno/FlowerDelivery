@@ -8,7 +8,11 @@
     <div class="container mt-5">
         <div>
             <h3 class="card-title">Заказ №{{ order.id }} от пользователя {{ order.user }}</h3>
-            <p class="card-text">Статус: <span class="badge bg-success">{{ order.status }}</span></p>
+            <p class="card-text">Статус:
+                <button class="btn btn-sm {% if order.status == 'Новый' %} btn-primary{% elif order.status == 'В процессе' %}btn-warning{% elif order.status == 'Завершен' %}btn-success{% elif order.status == 'Отменен' %}btn-danger{% endif %}" onclick="openStatusModal({{ order.id }}, '{{ order.status }}')">
+                    {{ order.status }}
+                </button>
+            </p>
             <p class="card-text">Дата создания: {{ order.order_date|date:"d.m.Y H:i" }}</p>
         </div>
         <h4>Товары в заказе:</h4>
@@ -33,6 +37,19 @@
     {% endfor %}
     </ul>
         <h2>Общая сумма заказа №{{ order.id }}: {{ order.total_price }} руб.</h2><br>
+        <h4>Способ оплаты: </h4>
+        <p>{{ order.payment_method }}</p>
+        <h4>Способ доставки:</h4>
+        {% if order.delivery_method == 'pickup' %}
+            <p>Самовывоз</p>
+        {% elif order.delivery_method == 'courier' %}
+            <p>Доставка курьером</p>
+            <p>Адрес: {{ order.address }}</p>
+            <p>Номер телефона: {{ order.phone_number }}</p>
+            <h4>Стоимость доставки: {{ order.delivery_price }} руб.</h4>
+            <h2>Итого к оплате: {{ order.total_price_with_delivery }} руб.</h2>
+        {% endif %}
+
         {% if user.role == 'user' %}
             <div class="d-grid gap-2 d-md-block">
             <form method="post" action="{% url 'repeat_order' order.id %}">
@@ -46,4 +63,54 @@
             <br><a href="{% url 'all_orders_history' %}" class="btn btn-danger">Назад к истории всех заказов</a>
         {% endif %}
     </div>
+    {% if user.role == 'admin' %}
+    <!-- Модальное окно для смены статуса -->
+    <div class="modal fade" id="statusModal" tabindex="-1" role="dialog" aria-labelledby="statusModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="statusModalLabel">Изменить статус заказа</h5>
+
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-around">
+                        <button class="btn btn-sm btn-primary cursor-pointer" onclick="changeOrderStatus('Новый')">Новый</button>
+                        <button class="btn btn-sm btn-warning cursor-pointer" onclick="changeOrderStatus('В процессе')">В процессе</button>
+                        <button class="btn btn-sm btn-success cursor-pointer" onclick="changeOrderStatus('Завершен')">Завершен</button>
+                        <button class="btn btn-sm btn-danger cursor-pointer" onclick="changeOrderStatus('Отменен')">Отменен</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+<script>
+// Открываем модальное окно и устанавливаем id заказа
+let currentOrderId;
+
+function openStatusModal(orderId, currentStatus) {
+    currentOrderId = orderId;
+    $('#statusModal').modal('show');
+}
+
+function changeOrderStatus(newStatus) {
+    const orderId = currentOrderId;
+
+    fetch(`{% url 'change_status' %}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}', // Передаем CSRF токен для защиты от CSRF атак
+        },
+        body: JSON.stringify({ id: orderId, status: newStatus }),
+    })
+    .then(response => {
+        if (response.ok) {
+            location.reload(); // Перезагружаем страницу, чтобы обновить статус заказа
+        } else {
+            alert('Ошибка при изменении статуса заказа.');
+        }
+    });
+}
+</script>
 {% endblock %}

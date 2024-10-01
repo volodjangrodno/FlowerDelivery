@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser, EditProfile
+from .models import CustomUser, Profile
 from django.forms import ModelForm
 
 
@@ -34,7 +34,7 @@ class CustomUserCreationForm(UserCreationForm):
 
 class EditProfileForm(ModelForm):
     class Meta:
-        model = EditProfile
+        model = Profile
         fields = ['username', 'email', 'password', 'avatar', 'first_name', 'last_name', 'avatar']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Введите имя пользователя'}),

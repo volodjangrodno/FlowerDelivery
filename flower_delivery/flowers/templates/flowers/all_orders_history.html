@@ -14,6 +14,17 @@
     <form method="get" action="{% url 'all_orders_history' %}">
         <div class="d-flex align-items-center">
             <label class="me-2">Фильтры:</label>
+
+            <!-- Фильтр по статусу -->
+            <label class="me-2">Статус:</label>
+            <select name="status" class="form-select me-2">
+                <option value="">Все</option>
+                <option value="Новый" {% if status_filter == "Новый" %}selected{% endif %}>Новый</option>
+                <option value="В процессе" {% if status_filter == "В процессе" %}selected{% endif %}>В процессе</option>
+                <option value="Завершён" {% if status_filter == "Завершён" %}selected{% endif %}>Завершён</option>
+                <option value="Отменён" {% if status_filter == "Отменён" %}selected{% endif %}>Отменён</option>
+            </select>
+
             <input type="text" name="username" value="{{ username_filter }}" placeholder="Введите username пользователя" class="form-control me-2">
             <label class="me-2">C:</label>
             <input type="date" name="date_from" value="{{ date_from }}" class="form-control me-2" placeholder="Дата с">
@@ -35,7 +46,11 @@
             <div class="card-body d-flex justify-content-between align-items-center">
                 <div>
                     <h5 class="card-title">Заказ №{{ order.id }} от пользователя {{ order.user }} на сумму {{ order.total_price }} руб.</h5>
-                    <p class="card-text">Статус: <span class="badge bg-success">{{ order.status }}</span></p>
+                    <p class="card-text">Статус:
+                        <button class="btn btn-sm {% if order.status == 'Новый' %} btn-primary{% elif order.status == 'В процессе' %}btn-warning{% elif order.status == 'Завершен' %}btn-success{% elif order.status == 'Отменен' %}btn-danger{% endif %}" onclick="openStatusModal({{ order.id }}, '{{ order.status }}')">
+                            {{ order.status }}
+                        </button>
+                    </p>
                     <p class="card-text">Дата создания: {{ order.order_date|date:"d.m.Y H:i" }}</p>
                 </div>
                 <a href="{% url 'order_detail' order.id %}" class="btn btn-primary">Детали заказа</a>
@@ -48,4 +63,58 @@
     {% endfor %}
     <a href="{% url 'generate_sales_report' %}?username={{ username_filter }}&date_from={{ date_from }}&date_to={{ date_to }}">Отчёт по продажам</a>
 </div>
+
+<!-- Модальное окно для смены статуса -->
+<div class="modal fade" id="statusModal" tabindex="-1" role="dialog" aria-labelledby="statusModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="statusModalLabel">Изменить статус заказа</h5>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-around">
+                    <button class="btn btn-sm btn-primary cursor-pointer" onclick="changeOrderStatus('Новый')">Новый</button>
+                    <button class="btn btn-sm btn-warning cursor-pointer" onclick="changeOrderStatus('В процессе')">В процессе</button>
+                    <button class="btn btn-sm btn-success cursor-pointer" onclick="changeOrderStatus('Завершен')">Завершен</button>
+                    <button class="btn btn-sm btn-danger cursor-pointer" onclick="changeOrderStatus('Отменен')">Отменен</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Открываем модальное окно и устанавливаем id заказа
+let currentOrderId;
+
+function openStatusModal(orderId, currentStatus) {
+    currentOrderId = orderId;
+    $('#statusModal').modal('show');
+}
+
+function changeOrderStatus(newStatus) {
+    const orderId = currentOrderId;
+
+    fetch("{% url 'change_status' %}", { // Корректируем URL
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}', // Передаем CSRF токен для защиты от CSRF атак
+        },
+        body: JSON.stringify({ id: orderId, status: newStatus }),
+    })
+    .then(response => {
+        if (response.ok) {
+            location.reload(); // Перезагружаем страницу, чтобы обновить статус заказа
+        } else {
+            alert('Ошибка при изменении статуса заказа.');
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        alert('Произошла ошибка, попробуйте снова.');
+    });
+}
+</script>
+
 {% endblock %}

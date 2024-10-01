@@ -13,7 +13,7 @@ class CustomUser(AbstractUser):
     email = models.EmailField(max_length=100, unique=True)
     password = models.CharField(max_length=100)
 
-    avatar = models.ImageField(upload_to='media/flowers/static/flowers/img/avatars/', default='media/flowers/static/flowers/img/avatars/default_user.png', blank=True)
+    avatar = models.ImageField(upload_to='flowers/static/flowers/img/avatars/', default='media/flowers/static/flowers/img/avatars/default_user.png', blank=True)
     ROLE_CHOICES = [
         ('user', 'Пользователь'),
         ('admin', 'Админ'),
@@ -40,16 +40,20 @@ class CustomUser(AbstractUser):
         return self.username
 
 # Модель профиля пользователя
-class EditProfile(models.Model):
+class Profile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     username = models.CharField(max_length=100, null=True, blank=True)
     email = models.EmailField(max_length=100, null=True, blank=True)
     password = models.CharField(max_length=100, null=True, blank=True)
-    avatar = models.ImageField(upload_to='media/flowers/static/flowers/img/avatars/', null=True, blank=True)
+    avatar = models.ImageField(upload_to='flowers/static/flowers/img/avatars/', null=True, blank=True)
     first_name = models.CharField(max_length=100, null=True, blank=True)
     last_name = models.CharField(max_length=100, null=True, blank=True)
     address = models.CharField(max_length=100, null=True, blank=True)
     phone_number = models.CharField(max_length=100, null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Профиль пользователя'
+        verbose_name_plural = 'Профили пользователей'
 
     def __str__(self):
         return f'Профиль пользователя {self.user.username}'
@@ -87,10 +91,10 @@ class Cart(models.Model):
 # Модель заказа
 class Order(models.Model):
     STATUS_CHOICES = [
-        ('New', 'Новый'),
-        ('Processing', 'В обработке'),
-        ('Completed', 'Завершен'),
-        ('Cancelled', 'Отменен'),
+        ('Новый', 'Новый'),
+        ('В процессе', 'В процессе'),
+        ('Завершен', 'Завершен'),
+        ('Отменен', 'Отменен'),
     ]
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)  # Связывает заказ с пользователем
@@ -102,6 +106,7 @@ class Order(models.Model):
     address = models.CharField(max_length=255, blank=True, null=True)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     delivery_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_price_with_delivery = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     payment_method = models.CharField(max_length=100, default='Наличные')
 
 
@@ -162,15 +167,5 @@ class Report(models.Model):
     def __str__(self):  # корректное отображение на странице
         return f'Отчет {self.id} о продажах от {self.report_date}'
 
-class SaleReport(models.Model):
-    order = models.ForeignKey('Order', on_delete=models.CASCADE)
-    sale_date = models.DateTimeField(auto_now_add=True)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
 
-    class Meta:
-        verbose_name = 'Отчет о продаже'
-        verbose_name_plural = 'Отчеты о продажах'
-
-    def __str__(self):  # корректное отображение на странице
-        return f"Отчет о продаже {self.order.id} на сумму {self.total_amount} руб."
 

@@ -33,7 +33,8 @@
             </div>
         {% endfor %}
         <div class="text-center mt-4">
-            <h3 class="text-center font-bold text-3xl my-5">Общая сумма: {{ total_price }} руб.</h3>
+            <h3 class="text-center font-bold text-3xl my-5">Общая сумма товаров: {{ total_price }} руб.</h3>
+
             <!-- Форма для оформления заказа и одновременного очистки корзины -->
             <form action="{% url 'order_create' %}" method="post">
                 {% csrf_token %}
@@ -43,19 +44,25 @@
                 <h4>Способ доставки:</h4>
                 <div>
                     <label>
-                        <input type="radio" name="delivery_method" value="pickup" checked onclick="toggleDeliveryFields()"> Самовывоз
+                        <input type="radio" name="delivery_method" value="pickup" checked onclick="toggleDeliveryFields()" onchange="updateDeliveryPrice()" > Самовывоз
                     </label>
                     <label>
-                        <input type="radio" name="delivery_method" value="courier" onclick="toggleDeliveryFields()"> Доставка курьером
+                        <input type="radio" name="delivery_method" value="courier" onclick="toggleDeliveryFields()" onchange="updateDeliveryPrice()"> Доставка курьером
                     </label>
                 </div>
 
-                <div id="courierFields" style="display: none;">
+                <div id="courierFields" style="display: none; ">
                     <h4>Введите данные для доставки:</h4>
                     <label for="address">Адрес:</label>
                     <input type="text" name="address" id="address" value="{{ user.editprofile.address }}" class="form-control" required>
-                    <label for="phone">Номер телефона:</label>
+                    <label for="phone_number">Номер телефона:</label>
                     <input type="text" name="phone_number" id="phone_number" value="{{ user.editprofile.phone_number }}" class="form-control" required>
+
+                    <div id="deliveryPrice"></div>
+                        <h4>Стоимость доставки рассчитывается исходя из суммы заказа:</h4>
+                        <p>- Если сумма заказа не превышает 20000 руб., стоимость доставки будет 2000 руб.</p>
+                        <p>- Если сумма заказа превышает либо равна 20000 руб., но не превышает 50000 руб., стоимость доставки будет 1000 руб.</p>
+                        <p>- Если сумма заказа превышает 50000 руб., стоимость доставки будет 0 руб.</p>
                 </div>
 
                 <!-- Способы оплаты -->
@@ -96,6 +103,7 @@
             courierFields.style.display = 'none';
         }
     }
+
 </script>
 </body>
 {% endblock %}

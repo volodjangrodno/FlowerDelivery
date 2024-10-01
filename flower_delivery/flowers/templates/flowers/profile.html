@@ -14,7 +14,7 @@
             {% if profile.avatar %}
                 <img src="{{ profile.avatar.url }}" alt="Avatar" style="width: 150px; height: 150px;" class="rounded-full">
             {% else %}
-                <img src='media/flowers/static/flowers/img/avatars/default_user.png' alt="Default Avatar" style="width: 150px; height: 150px;" class="rounded-full">
+                <img src='/media/flowers/static/flowers/img/avatars/default_user.png' alt="Default Avatar" style="width: 150px; height: 150px;" class="rounded-full">
             {% endif %}
             <div class="ml-4">
                 <br><p>Имя и фамилия: {{ profile.first_name }} {{ profile.last_name }}</p>
