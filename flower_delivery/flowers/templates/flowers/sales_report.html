@@ -19,7 +19,11 @@
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
                         <h5 class="card-title">Заказ №{{ order.id }} от пользователя {{ order.user }} на сумму {{ order.total_price }} руб.</h5>
-                        <p class="card-text">Статус: <span class="badge bg-success">{{ order.status }}</span></p>
+                        <p class="card-text">Статус:
+                            <button class="btn btn-sm {% if order.status == 'Новый' %} btn-primary{% elif order.status == 'В процессе' %}btn-warning{% elif order.status == 'Завершен' %}btn-success{% elif order.status == 'Отменен' %}btn-danger{% endif %}" onclick="openStatusModal({{ order.id }}, '{{ order.status }}')">
+                                {{ order.status }}
+                            </button>
+                        </p>
                         <p class="card-text">Дата создания: {{ order.order_date|date:"d.m.Y H:i" }}</p>
                     </div>
                     <a href="{% url 'order_detail' order.id %}" class="btn btn-primary">Детали заказа</a>
@@ -30,8 +34,8 @@
             {% endfor %}
         </ul>
 
-        <p>Общая сумма продаж: {{ total_sales }} руб.</p>
-        <p>Количество заказов: {{ count }}.</p>
+        <h4>Общая сумма продаж: {{ total_sales }} руб.</h4>
+        <h4>Количество заказов: {{ count }}.</h4>
 
         <a href="{% url 'generate_sales_report' %}">Сгенерировать новый отчет</a><br>
         <a href="{% url 'view_sales_reports' %}">Просмотреть все отчеты</a>

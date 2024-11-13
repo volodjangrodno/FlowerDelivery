@@ -13,7 +13,6 @@ class CustomUser(AbstractUser):
     email = models.EmailField(max_length=100, unique=True)
     password = models.CharField(max_length=100)
 
-    avatar = models.ImageField(upload_to='flowers/static/flowers/img/avatars/', default='media/flowers/static/flowers/img/avatars/default_user.png', blank=True)
     ROLE_CHOICES = [
         ('user', 'Пользователь'),
         ('admin', 'Админ'),
@@ -93,11 +92,13 @@ class Order(models.Model):
     STATUS_CHOICES = [
         ('Новый', 'Новый'),
         ('В процессе', 'В процессе'),
+        ('Готов к выдаче', 'Готов к выдаче'),
         ('Завершен', 'Завершен'),
         ('Отменен', 'Отменен'),
     ]
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)  # Связывает заказ с пользователем
+    telegram_user = models.ForeignKey('bot_flower.TelegramUser', on_delete=models.CASCADE, null=True)  # Связывает заказ с пользователем Telegram
     product = models.ManyToManyField(Product)  # Связывает заказ с продуктами
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='Новый')  # Статус заказа
     order_date = models.DateTimeField(auto_now_add=True)  # Дата заказа

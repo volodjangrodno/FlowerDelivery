@@ -84,33 +84,68 @@
         </div>
     </div>
     {% endif %}
-<script>
-// Открываем модальное окно и устанавливаем id заказа
-let currentOrderId;
 
-function openStatusModal(orderId, currentStatus) {
-    currentOrderId = orderId;
-    $('#statusModal').modal('show');
-}
+    <!-- Модальное окно для сообщений -->
+    <div class="modal fade" id="messageModal" tabindex="-1" role="dialog" aria-labelledby="messageModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="messageModalLabel">Сообщение</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div>{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">ОК</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-function changeOrderStatus(newStatus) {
-    const orderId = currentOrderId;
+    <script>
+    // Открываем модальное окно и устанавливаем id заказа
+    let currentOrderId;
 
-    fetch(`{% url 'change_status' %}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}', // Передаем CSRF токен для защиты от CSRF атак
-        },
-        body: JSON.stringify({ id: orderId, status: newStatus }),
-    })
-    .then(response => {
-        if (response.ok) {
-            location.reload(); // Перезагружаем страницу, чтобы обновить статус заказа
-        } else {
-            alert('Ошибка при изменении статуса заказа.');
-        }
-    });
-}
-</script>
+    function openStatusModal(orderId, currentStatus) {
+        currentOrderId = orderId;
+        $('#statusModal').modal('show');
+    }
+
+    function changeOrderStatus(newStatus) {
+        const orderId = currentOrderId;
+
+        fetch(`{% url 'change_status' %}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}', // Передаем CSRF токен для защиты от CSRF атак
+            },
+            body: JSON.stringify({ id: orderId, status: newStatus }),
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload(); // Перезагружаем страницу, чтобы обновить статус заказа
+            } else {
+                alert('Ошибка при изменении статуса заказа.');
+            }
+        });
+    }
+
+    <!-- Скрипт для отображения модального окна при наличии сообщений -->
+
+        $(document).ready(function() {
+            {% if messages %}
+                $('#messageModal').modal('show');
+            {% endif %}
+        });
+    </script>
+
+
 {% endblock %}

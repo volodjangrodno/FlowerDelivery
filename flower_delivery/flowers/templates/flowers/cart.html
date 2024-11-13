@@ -54,25 +54,25 @@
                 <div id="courierFields" style="display: none; ">
                     <h4>Введите данные для доставки:</h4>
                     <label for="address">Адрес:</label>
-                    <input type="text" name="address" id="address" value="{{ user.editprofile.address }}" class="form-control" required>
+                    <input type="text" name="address" id="address" value="{{ user.profile.address }}" class="form-control" required>
                     <label for="phone_number">Номер телефона:</label>
-                    <input type="text" name="phone_number" id="phone_number" value="{{ user.editprofile.phone_number }}" class="form-control" required>
+                    <input type="text" name="phone_number" id="phone_number" value="{{ user.profile.phone_number }}" class="form-control" required>
 
                     <div id="deliveryPrice"></div>
                         <h4>Стоимость доставки рассчитывается исходя из суммы заказа:</h4>
                         <p>- Если сумма заказа не превышает 20000 руб., стоимость доставки будет 2000 руб.</p>
                         <p>- Если сумма заказа превышает либо равна 20000 руб., но не превышает 50000 руб., стоимость доставки будет 1000 руб.</p>
-                        <p>- Если сумма заказа превышает 50000 руб., стоимость доставки будет 0 руб.</p>
+                        <p>- Если сумма заказа превышает либо равна 50000 руб., стоимость доставки будет 0 руб.</p>
                 </div>
 
                 <!-- Способы оплаты -->
                 <h4>Способ оплаты:</h4>
                 <div>
                     <label>
-                        <input type="radio" name="payment_method" value="cash" checked> Наличными
+                        <input type="radio" name="payment_method" value="Наличными" checked> Наличными
                     </label>
                     <label>
-                        <input type="radio" name="payment_method" value="card"> Картой
+                        <input type="radio" name="payment_method" value="Картой"> Картой
                     </label>
                 </div><br>
 

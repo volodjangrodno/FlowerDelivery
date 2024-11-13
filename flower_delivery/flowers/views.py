@@ -36,9 +36,18 @@ def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
+            user = form.save()
 
-            return redirect('login')
+            # Создаем профиль и сохраняем данные
+            Profile.objects.create(
+                user=user,
+                username=user.username,
+                email=user.email,
+
+            )
+
+            login(request, user)  # Автоматически авторизуем пользователя после регистрации
+            return redirect('home')
         else:
             error = form.errors  # Сохраняем ошибки формы
     else:
@@ -78,28 +87,28 @@ def profile(request):
 @login_required
 def edit_profile(request):
     user_profile, created = Profile.objects.get_or_create(user=request.user)
+
     if request.method == 'POST':
-        user_profile.username = request.POST['username']
-        user_profile.email = request.POST['email']
-        if 'avatar' in request.FILES:
-            # Проверяем, загружен ли новый аватар, и сохраняем его с новым именем
-            avatar_file = request.FILES['avatar']
-            file_extension = os.path.splitext(avatar_file.name)[1]
-            avatar_file.name = f"avatar_{user_profile.username}{file_extension}"  # Переименовываем файл
-            user_profile.avatar = avatar_file
+        form = EditProfileForm(request.POST, request.FILES, instance=user_profile)  # Передаем instance
+        if form.is_valid():
+            # Обновляем аватар, если он был загружен
+            if 'avatar' in request.FILES:
+                avatar_file = request.FILES['avatar']
+                file_extension = os.path.splitext(avatar_file.name)[1]
+                avatar_file.name = f"avatar_{user_profile.username}{file_extension}"  # Переименовываем файл
+                user_profile.avatar = avatar_file
 
-        # Обновление полей профиля
-        user_profile.first_name = request.POST.get('first_name', user_profile.first_name)
-        user_profile.last_name = request.POST.get('last_name', user_profile.last_name)
-        user_profile.address = request.POST.get('address', user_profile.address)
-        user_profile.phone_number = request.POST.get('phone_number', user_profile.phone_number)
+                # Обновляем остальные поля профиля из формы
+            user_profile = form.save(commit=False)  # Сохраняем, но не коммитим еще
+            user_profile.save()  # Сохраняем профиль
+            return redirect('profile')  # Перенаправляем на страницу профиля
+    else:
+        form = EditProfileForm(instance=user_profile)  # Передаем instance для отображения текущих данных
 
-        # Сохранение изменений
-        user_profile.save()
-        return redirect('profile')
-
-    return render(request, 'flowers/edit_profile.html',
-                  {'user': request.user, 'form': EditProfileForm(instance=user_profile)})
+    return render(request, 'flowers/edit_profile.html', {
+        'user': request.user,
+        'form': form,  # Теперь передаем уже созданный form
+    })
 
 # Просмотр каталога товаров
 def catalog(request):
@@ -296,7 +305,7 @@ def repeat_order(request, order_id):
     new_order = Order.objects.create(
         user=existing_order.user,
         total_price=existing_order.total_price,
-        order_date=datetime.datetime.now(),
+        order_date=datetime.now(),
         status='Новый',
 
     )

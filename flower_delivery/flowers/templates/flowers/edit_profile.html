@@ -13,31 +13,38 @@
             {% csrf_token %}
             <div class="form-group">
                 <label>Имя пользователя:</label>
-                <input type="text" name="username" class="form-control" value="{{ user.username }}" placeholder="Введите ваш username">
+
+                {{ form.username }}
             </div>
             <div class="form-group">
                 <label>Электронная почта:</label>
-                <input type="email" name="email" class="form-control" value="{{ user.email }}" placeholder="Введите ваш email">
+
+                {{ form.email }}
             </div>
             <div class="form-group">
                 <label>Имя:</label>
-                <input type="text" name="first_name" class="form-control" value="{{ user.first_name }}" placeholder="Введите ваше имя">
+
+                {{ form.first_name }}
             </div>
             <div class="form-group">
                 <label>Фамилия:</label>
-                <input type="text" name="last_name" class="form-control" value="{{ user.last_name }}" placeholder="Введите вашу фамилию">
+
+                {{ form.last_name }}
             </div>
             <div class="form-group">
                 <label>Аватар:</label>
-                <input type="file" name="avatar" class="form-control">
+
+                {{ form.avatar }}
             </div>
             <div class="form-group">
                 <label>Адрес:</label>
-                <input type="text" name="address" class="form-control" value="{{ profile.address }}" placeholder="Введите ваш адрес">
+
+                {{ form.address}}
             </div>
             <div class="form-group">
                 <label>Номер телефона:</label>
-                <input type="text" name="phone_number" class="form-control" value="{{ profile.phone_number }}" placeholder="Введите ваш номер телефона">
+
+                {{ form.phone_number }}
             </div>
             <button type="submit" class="btn btn-primary mt-3">Сохранить изменения</button>
         </form>
