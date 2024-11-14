@@ -86,7 +86,7 @@ async def start(message: Message):
     )
 
 @dp.callback_query(lambda c: c.data == "my_orders")
-async def my_orders(callback: CallbackQuery, user_id: int):
+async def my_orders(callback: CallbackQuery):
     conn = None  # Инициализируем conn заранее
     try:
         chat_id = callback.from_user.id
@@ -116,7 +116,7 @@ async def my_orders(callback: CallbackQuery, user_id: int):
             # Формируем сообщение с заказами
         orders_message = 'Мои заказы:\n'
         for order in orders:
-            orders_message += f'Заказ №{order[0]} от {order[1]} на сумму {order[2]} руб.\n'
+            orders_message += f'Заказ №{order.id} от {order.order_date} на сумму {order.total_price} руб.\n'
 
         await callback.message.edit_text(orders_message)
         await callback.answer()  # Убираем вращающийся индикатор загрузки

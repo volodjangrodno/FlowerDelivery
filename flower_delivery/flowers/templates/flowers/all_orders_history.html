@@ -21,6 +21,7 @@
                 <option value="">Все</option>
                 <option value="Новый" {% if status_filter == "Новый" %}selected{% endif %}>Новый</option>
                 <option value="В процессе" {% if status_filter == "В процессе" %}selected{% endif %}>В процессе</option>
+                 <option value="Готов" {% if status_filter == "Готов" %}selected{% endif %}>Готов</option>
                 <option value="Завершён" {% if status_filter == "Завершён" %}selected{% endif %}>Завершён</option>
                 <option value="Отменён" {% if status_filter == "Отменён" %}selected{% endif %}>Отменён</option>
             </select>
@@ -47,7 +48,7 @@
                 <div>
                     <h5 class="card-title">Заказ №{{ order.id }} от пользователя {{ order.user }} на сумму {{ order.total_price }} руб.</h5>
                     <p class="card-text">Статус:
-                        <button class="btn btn-sm {% if order.status == 'Новый' %} btn-primary{% elif order.status == 'В процессе' %}btn-warning{% elif order.status == 'Завершен' %}btn-success{% elif order.status == 'Отменен' %}btn-danger{% endif %}" onclick="openStatusModal({{ order.id }}, '{{ order.status }}')">
+                        <button class="btn btn-sm {% if order.status == 'Новый' %} btn-primary{% elif order.status == 'В процессе' %}btn-warning{% elif order.status == 'Готов' %}btn-danger{% elif order.status == 'Завершен' %}btn-success{% elif order.status == 'Отменен' %}btn-secondary{% endif %}" onclick="openStatusModal({{ order.id }}, '{{ order.status }}')">
                             {{ order.status }}
                         </button>
                     </p>
@@ -75,8 +76,9 @@
                 <div class="d-flex justify-content-around">
                     <button class="btn btn-sm btn-primary cursor-pointer" onclick="changeOrderStatus('Новый')">Новый</button>
                     <button class="btn btn-sm btn-warning cursor-pointer" onclick="changeOrderStatus('В процессе')">В процессе</button>
+                    <button class="btn btn-sm btn-danger cursor-pointer" onclick="changeOrderStatus('Готов')">Готов</button>
                     <button class="btn btn-sm btn-success cursor-pointer" onclick="changeOrderStatus('Завершен')">Завершен</button>
-                    <button class="btn btn-sm btn-danger cursor-pointer" onclick="changeOrderStatus('Отменен')">Отменен</button>
+                    <button class="btn btn-sm btn-secondary cursor-pointer" onclick="changeOrderStatus('Отменен')">Отменен</button>
                 </div>
             </div>
         </div>

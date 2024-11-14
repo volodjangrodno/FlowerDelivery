@@ -9,7 +9,7 @@
         <div>
             <h3 class="card-title">Заказ №{{ order.id }} от пользователя {{ order.user }}</h3>
             <p class="card-text">Статус:
-                <button class="btn btn-sm {% if order.status == 'Новый' %} btn-primary{% elif order.status == 'В процессе' %}btn-warning{% elif order.status == 'Завершен' %}btn-success{% elif order.status == 'Отменен' %}btn-danger{% endif %}" onclick="openStatusModal({{ order.id }}, '{{ order.status }}')">
+                <button class="btn btn-sm {% if order.status == 'Новый' %} btn-primary{% elif order.status == 'В процессе' %}btn-warning{% elif order.status == 'Готов' %}btn-danger{% elif order.status == 'Завершен' %}btn-success{% elif order.status == 'Отменен' %}btn-secondary{% endif %}" onclick="openStatusModal({{ order.id }}, '{{ order.status }}')">
                     {{ order.status }}
                 </button>
             </p>
@@ -76,8 +76,9 @@
                     <div class="d-flex justify-content-around">
                         <button class="btn btn-sm btn-primary cursor-pointer" onclick="changeOrderStatus('Новый')">Новый</button>
                         <button class="btn btn-sm btn-warning cursor-pointer" onclick="changeOrderStatus('В процессе')">В процессе</button>
+                        <button class="btn btn-sm btn-danger cursor-pointer" onclick="changeOrderStatus('Готов')">Готов</button>
                         <button class="btn btn-sm btn-success cursor-pointer" onclick="changeOrderStatus('Завершен')">Завершен</button>
-                        <button class="btn btn-sm btn-danger cursor-pointer" onclick="changeOrderStatus('Отменен')">Отменен</button>
+                        <button class="btn btn-sm btn-secondary cursor-pointer" onclick="changeOrderStatus('Отменен')">Отменен</button>
                     </div>
                 </div>
             </div>
