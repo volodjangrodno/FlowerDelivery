@@ -1,1 +1,1 @@
-TELEGRAM_BOT_TOKEN = Your Bot Token'
+TELEGRAM_BOT_TOKEN = 'Your Bot Token'

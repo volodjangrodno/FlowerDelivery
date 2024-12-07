@@ -5,12 +5,16 @@ start_keyboard = InlineKeyboardMarkup(inline_keyboard=[
      InlineKeyboardButton(text="Аналитика", callback_data="analytics")]
 ])
 
+back_to_start_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text="Назад", callback_data="back_to_start")]
+])
+
 async def get_orders_list(orders):
-    keyboard = InlineKeyboardMarkup()
+    list_orders_keyboard = InlineKeyboardMarkup()
     for order in orders:
-        keyboard.add(InlineKeyboardButton(
-            text=f'Заказ №{order.id} от {order.order_date} на сумму {order.total_price}',
+        list_orders_keyboard.add(InlineKeyboardButton(
+            text=f"Заказ №{order.id} от {order.order_date.strftime('%d-%m-%Y %H:%M')} на сумму {order.total_price_with_delivery} руб.",
             callback_data=f"order_details:{order.id}"
         ))
-    keyboard.add(InlineKeyboardButton(text="Назад", callback_data="back_to_start"))
-    return keyboard
+    list_orders_keyboard.add(InlineKeyboardButton(text="Назад", callback_data="back_to_start"))
+    return list_orders_keyboard

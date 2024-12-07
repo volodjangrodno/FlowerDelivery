@@ -5,7 +5,7 @@ from django.conf.urls.static import static
 
 
 urlpatterns = [
-    path('webhook/', views.webhook, name='webhook'),
+    path('send_order_status_update/<int:order_id>/', views.send_order_status_update, name='send_order_status_update'),
     path('send_order_confirmation/<int:order_id>/', views.send_order_confirmation, name='send_order_confirmation'),
 ]
 

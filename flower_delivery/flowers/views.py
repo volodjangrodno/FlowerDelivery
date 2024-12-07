@@ -24,6 +24,9 @@ import pytz
 from django.urls import reverse
 from django import template
 from .filters import *
+import asyncio
+
+from asgiref.sync import sync_to_async
 
 
 def home(request):
@@ -264,6 +267,8 @@ def order_create(request):
         order.total_price_with_delivery = order.total_price + order.delivery_price
         order.save()  # Сохраняем заказ с обновленной общей суммой
 
+
+
         # Очищаем корзину, если указано
         if 'clear_cart' in request.POST:
             request.session['cart'] = {}  # Очищаем корзину
@@ -307,6 +312,11 @@ def repeat_order(request, order_id):
         total_price=existing_order.total_price,
         order_date=datetime.now(),
         status='Новый',
+        delivery_method=existing_order.delivery_method,
+        delivery_price=existing_order.delivery_price,
+        payment_method=existing_order.payment_method,
+        address=existing_order.address,
+        phone_number=existing_order.phone_number,
 
     )
 
@@ -322,6 +332,8 @@ def repeat_order(request, order_id):
 
     # Сохранение нового заказа
     new_order.save()
+
+
 
     # Отправка сообщения пользователю
     messages.success(request, 'Заказ успешно повторен!')
@@ -344,11 +356,16 @@ def change_status(request):
         order = Order.objects.get(id=order_id)
         order.status = new_status
         order.save()
+
+
+
         return JsonResponse({'message': 'Статус заказа обновлён успешно.'}, status=200)
     except Order.DoesNotExist:
         return JsonResponse({'error': 'Заказ не найден.'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
 
 # Просмотр истории заказов
 @login_required

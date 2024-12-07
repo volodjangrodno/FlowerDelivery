@@ -30,8 +30,17 @@ logging.basicConfig(level=logging.INFO, stream=sys.stdout)  # Устанавли
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
 dp = Dispatcher()
 
+DATABASE = 'flower_delivery/db.sqlite3'  # Путь к базе данных
 
 
+def get_orders_by_user(user_id):
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, order_date, total_price FROM flowers_order WHERE user_id = ?", (user_id,))
+    orders = cursor.fetchall()
+    conn.close()
+
+    return orders
 
 @dp.message(Command("orders"))
 async def my_orders(message: Message):

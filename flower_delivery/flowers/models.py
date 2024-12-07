@@ -98,7 +98,7 @@ class Order(models.Model):
     ]
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)  # Связывает заказ с пользователем
-    telegram_user = models.ForeignKey('bot_flower.TelegramUser', on_delete=models.CASCADE, null=True)  # Связывает заказ с пользователем Telegram
+    telegram_user = models.ForeignKey('bot_flower.TelegramUser', on_delete=models.CASCADE, null=False)  # Связывает заказ с пользователем Telegram
     product = models.ManyToManyField(Product)  # Связывает заказ с продуктами
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='Новый')  # Статус заказа
     order_date = models.DateTimeField(auto_now_add=True)  # Дата заказа
