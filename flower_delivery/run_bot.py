@@ -98,7 +98,7 @@ async def all_orders(message: Message):
 
     if not orders:
         await message.answer("Нет списка доступных заказов.")
-        await message.message.edit_text("Нет списка доступных заказов.", reply_markup=kb.start_keyboard)
+        await message.edit_text("Нет списка доступных заказов.", reply_markup=kb.start_keyboard)
         return
 
         # Формируем сообщение со всеми заказами
@@ -124,14 +124,17 @@ async def all_orders(message: Message):
 
 
 
-async def send_order_confirmation(order):
+async def send_order_confirmation(chat_id, order):
     # Получаем пользователя Telegram асинхронно
     user = await sync_to_async(TelegramUser.objects.get)(user=order.user)  # предполагаем, что у заказа есть связь с пользователем
+    # Получаем продукты из заказа
+    products = await sync_to_async(list)(order.orderitem_set.all())  # Получаем все продукты из заказа
 
     # Формируем сообщение
+    product_list = "\n".join([f"{item.product.name} (количество: {item.quantity})" for item in products])
     message = (
         f"Ваш заказ №{order.id} успешно оформлен!\n"  
-        f"Продукты в заказе: {order.products}\n"  
+        f"Продукты в заказе:\n{product_list}\n"  
         f"Статус: {order.status}\n"  
         f"Дата заказа: {order.order_date.strftime('%d-%m-%Y %H:%M')}\n"  
         f"Способ доставки: {order.delivery_method}\n"  
@@ -144,7 +147,7 @@ async def send_order_confirmation(order):
     )
 
     # Асинхронно отправляем сообщение
-    await bot.send_message(chat_id=user.telegram_id, text=message)
+    await bot.send_message(chat_id=chat_id, text=message)
 
 
 async def send_order_status_update(order):
@@ -179,7 +182,7 @@ async def my_orders(callback: CallbackQuery):
 
     if not orders:
         await callback.answer("У вас нет текущих заказов.")
-        await callback.message.edit_text("У вас нет текущих заказов.", reply_markup=kb.start_keyboard)
+        await callback.message.answer("У вас нет текущих заказов.", reply_markup=kb.start_keyboard)
         return
 
     # Формируем сообщение с заказами
@@ -202,8 +205,8 @@ async def my_orders(callback: CallbackQuery):
         InlineKeyboardButton(text="Назад", callback_data="back_to_start")
     ])
 
-    await callback.message.edit_text(orders_message, reply_markup=keyboard)
-    await callback.answer()
+    await callback.message.answer(orders_message, reply_markup=keyboard)
+
 
 
 @dp.callback_query(lambda c: c.data.startswith('order_details:'))
@@ -213,13 +216,16 @@ async def process_order_detail(callback_query: CallbackQuery):
     # Получаем заказ, используя sync_to_async
     order = await sync_to_async(Order.objects.get)(id=order_id)
 
+    # Получаем пользователя асинхронно
+    user = await sync_to_async(lambda: order.user)()  # Используем лямбда-функцию для получения пользователя
+
     # Получаем продукты заказа асинхронно
     products = await sync_to_async(list)(order.product.all())
 
     details_message = (
         f"Детали заказа №{order.id}\n"  
         f"Дата заказа: {order.order_date.strftime('%d-%m-%Y %H:%M')}\n" 
-        f"Заказчик: {order.user}\n"
+        f"Заказчик: {user}\n"
         f"Продукты: {', '.join([product.name for product in products])}\n"  
         f"Статус: {order.status}\n"  
         f"Сумма: {order.total_price} руб.\n"  
@@ -261,6 +267,7 @@ async def analytics(callback: CallbackQuery):
     # Проверяем роль пользователя
     if telegram_user.role != 'admin':
         await callback.answer("У вас нет прав для доступа к аналитике.")
+        await callback.message.answer("У вас нет прав для доступа к аналитике.", reply_markup=kb.start_keyboard)
         return
 
     # Получаем все отчеты
@@ -268,7 +275,7 @@ async def analytics(callback: CallbackQuery):
 
     if not reports:
         await callback.answer("Нет доступных отчетов.")
-        await callback.message.edit_text("Нет доступных отчетов.", reply_markup=kb.start_keyboard)
+        await callback.message.answer("Нет доступных отчетов.", reply_markup=kb.start_keyboard)
         return
 
     # Формируем сообщение с отчетами
@@ -290,8 +297,8 @@ async def analytics(callback: CallbackQuery):
         InlineKeyboardButton(text="Назад", callback_data="back_to_start")
     ])
 
-    await callback.message.edit_text(reports_message, reply_markup=keyboard)
-    await callback.answer()
+    await callback.message.answer(reports_message, reply_markup=keyboard)
+
 
 @dp.callback_query(lambda c: c.data.startswith('report_details:'))
 async def process_report_detail(callback_query: CallbackQuery):

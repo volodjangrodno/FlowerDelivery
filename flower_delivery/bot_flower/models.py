@@ -7,7 +7,7 @@ class TelegramUser(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     chat_id = models.BigIntegerField(unique=True)  # Убрали max_length
     user_orders = models.ManyToManyField('flowers.Order', related_name='telegram_user_orders', blank=True)
-    TG_username = models.CharField(max_length=100, null=True, blank=True)
+    TG_username = models.CharField(max_length=100, unique=True, null=True, blank=True)
     first_name = models.CharField(max_length=100, null=True, blank=True)
     last_name = models.CharField(max_length=100, null=True, blank=True)
     address = models.CharField(max_length=200, null=True, blank=True)
@@ -18,8 +18,13 @@ class TelegramUser(models.Model):
         verbose_name = 'Пользователь Telegram'
         verbose_name_plural = 'Пользователи Telegram'
 
+    def save(self, *args, **kwargs):
+        if self.TG_username and not self.TG_username.startswith('@'):
+            self.TG_username = f'@{self.TG_username}'
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return self.user.username
+        return self.TG_username if self.TG_username else "Без имени"
 
 
 class TelegramOrder(models.Model):

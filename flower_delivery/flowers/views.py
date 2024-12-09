@@ -12,6 +12,7 @@ from django.db import transaction
 from django.db.models import Sum, F
 from .forms import CustomUserCreationForm, EditProfileForm
 from .models import Product, Order, Review, Report, CustomUser, OrderItem, Profile
+from bot_flower.models import TelegramUser
 from django.utils import timezone
 from django.utils.timezone import make_aware
 from django.db.models.functions import ExtractDay  # Импортируем ExtractDay
@@ -26,7 +27,7 @@ from django import template
 from .filters import *
 import asyncio
 
-from asgiref.sync import sync_to_async
+from asgiref.sync import async_to_sync
 
 
 def home(request):
@@ -222,6 +223,10 @@ def calculate_delivery_price(total_price, delivery_method):
 @login_required
 def order_create(request):
     if request.method == 'POST':
+        if not request.user.is_authenticated:
+            messages.info(request, 'Пожалуйста, войдите в аккаунт для оформления заказа.')
+            return redirect('login')  # Перенаправление на страницу входа
+
         # Получаем данные из формы
         delivery_method = request.POST.get('delivery_method')
         payment_method = request.POST.get('payment_method')
@@ -234,13 +239,16 @@ def order_create(request):
             messages.info(request, 'Корзина пуста.')
             return redirect('catalog')
 
-        if not request.user.is_authenticated:
-            messages.info(request, 'Пожалуйста, войдите в аккаунт для оформления заказа.')
-            return redirect('login')  # Перенаправление на страницу входа
+        # Получаем username из Telegram (например, из профиля пользователя)
+        telegram_user = None
+        if hasattr(request.user, 'telegram_id') and request.user.telegram_id:
+            telegram_user, created = TelegramUser.objects.get_or_create(username=f"@{request.user.telegram_id}")
 
-        # Создание нового заказа
+
+                # Создание нового заказа
         order = Order.objects.create(
             user=request.user,
+            telegram_user=telegram_user,
             total_price=0,  # Сумма будет рассчитана позже
             order_date=datetime.now(),
             status='Новый',
@@ -266,6 +274,8 @@ def order_create(request):
         order.delivery_price = calculate_delivery_price(total_price, delivery_method)
         order.total_price_with_delivery = order.total_price + order.delivery_price
         order.save()  # Сохраняем заказ с обновленной общей суммой
+
+
 
 
 
@@ -356,6 +366,7 @@ def change_status(request):
         order = Order.objects.get(id=order_id)
         order.status = new_status
         order.save()
+
 
 
 
